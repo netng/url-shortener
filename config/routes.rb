@@ -5,4 +5,5 @@ Rails.application.routes.draw do
   # root "articles#index"
   post 'shorten', to: 'shortens#create'
   get '/:shortcode', to: 'shortens#show'
+  get '/:shortcode/stats', to: 'stats#show'
 end
