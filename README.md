@@ -1,24 +1,13 @@
 # README
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+## Installation instruction
+this application has containerize use docker. Please make sure install docker on your system.
 
-Things you may want to cover:
+```
+- clone this repository
+- cd to the folder, ex: cd url-shortener
+- and run this follwoing command:
+	- docker-compose build
+	- docker-compose up -d
+	- docker-compose exec web bundle exec rake db:setup db:migrate
 
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
