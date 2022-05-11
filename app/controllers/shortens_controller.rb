@@ -1,51 +1,65 @@
 class ShortensController < ApplicationController
-  before_action :set_shorten, only: %i[ show update destroy ]
+  require 'net/http'
 
-  # GET /shortens
-  def index
-    @shortens = Shorten.all
-
-    render json: @shortens
-  end
-
-  # GET /shortens/1
   def show
-    render json: @shorten
+    @shorten = Url.find_by(shortcode: params[:shortcode])
+
+    if !@shorten.nil?
+      uri = URI.parse(@shorten.url)
+      response = Net::HTTP.get_response(uri)
+
+      return render json: response.header
+    else
+      return render json: {
+        data: { 
+          message: "shortcode cannot be found in the system" 
+          }
+        }, status: 404
+
+    end
+
+
   end
 
-  # POST /shortens
   def create
-    @shorten = Shorten.new(shorten_params)
+    @shorten = Url.new(shorten_params)
+    @existing_shortcode = Url.find_by(shortcode: params[:shortcode])
 
-    if @shorten.save
-      render json: @shorten, status: :created, location: @shorten
-    else
-      render json: @shorten.errors, status: :unprocessable_entity
+    if @shorten.shortcode.blank?
+      @shorten.shortcode = (rand(9).to_s + ('a'..'z').to_a.shuffle[0,2].join + ('A'..'Z').to_a.shuffle[0,2
+      ].join + "_".split('').shuffle[0,2].join)
     end
-  end
 
-  # PATCH/PUT /shortens/1
-  def update
-    if @shorten.update(shorten_params)
-      render json: @shorten
-    else
-      render json: @shorten.errors, status: :unprocessable_entity
+    if @shorten.url.blank?
+      return render json: {
+        data: { 
+          message: "url is not present" 
+          }
+        }, status: 400
     end
-  end
 
-  # DELETE /shortens/1
-  def destroy
-    @shorten.destroy
+    if !@existing_shortcode.nil?
+      return render json: {
+        data: {
+          message: "the desired shortcode is already in use."
+          }
+        }, status: 409
+    end
+
+    if @shorten.shortcode.match(/^[0-9a-zA-Z_]{4,}$/).nil?
+      return render json: {
+        data: {
+          message: "the shortcode fails to meet the requirements"
+          }
+        }, status: 422
+    end
+
+    render json: @shorten, status: :created if @shorten.save
+
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_shorten
-      @shorten = Shorten.find(params[:id])
-    end
-
-    # Only allow a list of trusted parameters through.
     def shorten_params
-      params.fetch(:shorten, {})
+      params.require(:shorten).permit(:url, :shortcode)
     end
 end
