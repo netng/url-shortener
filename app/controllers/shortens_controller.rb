@@ -5,6 +5,7 @@ class ShortensController < ApplicationController
     @shorten = Url.find_by(shortcode: params[:shortcode])
 
     if !@shorten.nil?
+      @shorten.update(redirectCount: @shorten.redirectCount + 1, lastSeenDate: Time.now)
       uri = URI.parse(@shorten.url)
       response = Net::HTTP.get_response(uri)
 
@@ -23,6 +24,7 @@ class ShortensController < ApplicationController
 
   def create
     @shorten = Url.new(shorten_params)
+    @shorten.startDate = Time.now
     @existing_shortcode = Url.find_by(shortcode: params[:shortcode])
 
     if @shorten.shortcode.blank?
