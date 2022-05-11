@@ -1,3 +1,3 @@
 class UrlSerializer < ActiveModel::Serializer
-  attributes :id
+  attributes :shortcode
 end
