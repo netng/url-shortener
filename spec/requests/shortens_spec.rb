@@ -13,115 +13,27 @@ require 'rails_helper'
 # sticking to rails and rspec-rails APIs to keep things simple and stable.
 
 RSpec.describe "/shortens", type: :request do
-  # This should return the minimal set of attributes required to create a valid
-  # Shorten. As you add validations to Shorten, be sure to
-  # adjust the attributes here as well.
-  let(:valid_attributes) {
-    skip("Add a hash of attributes valid for your model")
-  }
 
-  let(:invalid_attributes) {
-    skip("Add a hash of attributes invalid for your model")
-  }
+  it "ensure create a valid shortcode" do
+    headers = { "ACCEPT" => "application/json" }
+    post "/shorten", params: {shorten: { url: "http://pintaria.com", shortcode: "1aB_" } }, :headers => headers 
+    
+    expect(response.content_type).to eq("application/json; charset=utf-8")
+    expect(response).to have_http_status(:created)
 
-  # This should return the minimal set of values that should be in the headers
-  # in order to pass any filters (e.g. authentication) defined in
-  # ShortensController, or in your router and rack
-  # middleware. Be sure to keep this updated too.
-  let(:valid_headers) {
-    {}
-  }
-
-  describe "GET /index" do
-    it "renders a successful response" do
-      Shorten.create! valid_attributes
-      get shortens_url, headers: valid_headers, as: :json
-      expect(response).to be_successful
-    end
   end
+  it "ensure create invalid shortcode" do
+    headers = { "ACCEPT" => "application/json" }
+    post "/shorten", params: {shorten: { url: "http://pintaria.com", shortcode: "1aB" } }, :headers => headers 
+    
+    expect(response.status).to eq(422)
 
-  describe "GET /show" do
-    it "renders a successful response" do
-      shorten = Shorten.create! valid_attributes
-      get shorten_url(shorten), as: :json
-      expect(response).to be_successful
-    end
+    json = JSON.parse(response.body).deep_symbolize_keys
+    expect(json[:data][:message]).to eq("the shortcode fails to meet the requirements")
+    expect(Url.count).to eq(0)
   end
+  it "ensure generate random shortcode when empty shortcode given "
+  it "reject duplicate shortcode"
+  it "return 404 unknown shortcode"
 
-  describe "POST /create" do
-    context "with valid parameters" do
-      it "creates a new Shorten" do
-        expect {
-          post shortens_url,
-               params: { shorten: valid_attributes }, headers: valid_headers, as: :json
-        }.to change(Shorten, :count).by(1)
-      end
-
-      it "renders a JSON response with the new shorten" do
-        post shortens_url,
-             params: { shorten: valid_attributes }, headers: valid_headers, as: :json
-        expect(response).to have_http_status(:created)
-        expect(response.content_type).to match(a_string_including("application/json"))
-      end
-    end
-
-    context "with invalid parameters" do
-      it "does not create a new Shorten" do
-        expect {
-          post shortens_url,
-               params: { shorten: invalid_attributes }, as: :json
-        }.to change(Shorten, :count).by(0)
-      end
-
-      it "renders a JSON response with errors for the new shorten" do
-        post shortens_url,
-             params: { shorten: invalid_attributes }, headers: valid_headers, as: :json
-        expect(response).to have_http_status(:unprocessable_entity)
-        expect(response.content_type).to match(a_string_including("application/json"))
-      end
-    end
-  end
-
-  describe "PATCH /update" do
-    context "with valid parameters" do
-      let(:new_attributes) {
-        skip("Add a hash of attributes valid for your model")
-      }
-
-      it "updates the requested shorten" do
-        shorten = Shorten.create! valid_attributes
-        patch shorten_url(shorten),
-              params: { shorten: new_attributes }, headers: valid_headers, as: :json
-        shorten.reload
-        skip("Add assertions for updated state")
-      end
-
-      it "renders a JSON response with the shorten" do
-        shorten = Shorten.create! valid_attributes
-        patch shorten_url(shorten),
-              params: { shorten: new_attributes }, headers: valid_headers, as: :json
-        expect(response).to have_http_status(:ok)
-        expect(response.content_type).to match(a_string_including("application/json"))
-      end
-    end
-
-    context "with invalid parameters" do
-      it "renders a JSON response with errors for the shorten" do
-        shorten = Shorten.create! valid_attributes
-        patch shorten_url(shorten),
-              params: { shorten: invalid_attributes }, headers: valid_headers, as: :json
-        expect(response).to have_http_status(:unprocessable_entity)
-        expect(response.content_type).to match(a_string_including("application/json"))
-      end
-    end
-  end
-
-  describe "DELETE /destroy" do
-    it "destroys the requested shorten" do
-      shorten = Shorten.create! valid_attributes
-      expect {
-        delete shorten_url(shorten), headers: valid_headers, as: :json
-      }.to change(Shorten, :count).by(-1)
-    end
-  end
 end
